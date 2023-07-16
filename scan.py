@@ -1,64 +1,38 @@
 from abc import ABC, abstractmethod
-import re
-import urllib
-import requests
-import argparse
-import json
-from urllib.parse import urlparse
 
-class ApiClient(ABC):
-    def __init__(self, api_name, api_pattern):
-        self.api_name = api_name
-        self.api_pattern = api_pattern
+class ApiSearch(ABC):
+  @abstractmethod
+  def search(self, query):
+    pass
 
-    @abstractmethod
-    def search(self, query, page, token):
-        pass
+  @abstractmethod  
+  def extract_keys(self, content):
+    pass
 
-    def find_keys(self, content):
-        return re.findall(self.api_pattern, content)
+class GithubSearch(ApiSearch):
+  def __init__(self, token):
+    self.token = token
 
-class GithubClient(ApiClient):
-    def __init__(self, api_name, api_pattern):
-        super().__init__(api_name, api_pattern)
+  def search(self, query):
+    response = requests.get(f"https://api.github.com/search/code?q={query}", headers={"Authorization": f"token {self.token}"})
+    return [item["html_url"] for item in response.json()["items"]]
+  
+  def extract_keys(self, content):
+    return re.findall(r"[A-Za-z0-9]{32}", content)
 
-    def search(self, query, page, token):
-        raw_urls = []
-        headers = {"Authorization": "token " + token}
-        url = f'https://api.github.com/search/code?s=indexed&type=Code&o=desc&q={query}&page={page}'
-        response = requests.get(url, headers=headers)
-        response_json = json.loads(response.content)
-        for item in response_json['items']:
-            raw_urls.append(get_raw_file(item['html_url']))
-        return raw_urls
+class SearchOrchestrator:
+  def __init__(self, api_search):
+    self.api_search = api_search
 
-class ApiKeySearch:
-    def __init__(self, token):
-        self.clients = []
-        self.token = token
-
-    def register(self, client):
-        self.clients.append(client)
-
-    def search_keys(self):
-        print("--- DATA COLLECTION ---")
-        for client in self.clients:
-            query = f"{client.api_name}_api_key" 
-            raw_urls = client.search(query, 1, self.token)
-            for url in raw_urls:
-                with urllib.request.urlopen(url) as resource:
-                    content = resource.read().decode(resource.headers.get_content_charset())
-                keys = client.find_keys(content)
-                if keys:
-                    print(f"Found {client.api_name.upper()} API keys {keys} in file {url}")
-        print("--- Data collection completed ---")
+  def run(self, query):
+    for url in self.api_search.search(query):
+      content = requests.get(url.replace("github.com", "raw.githubusercontent.com")).text
+      keys = self.api_search.extract_keys(content)
+      if keys:
+        print(f"Found keys {keys} in {url}")
 
 if __name__ == '__main__':
-    token = "YOUR_TOKEN_HERE"
-
-    search = ApiKeySearch(token)
-
-    github_client = GithubClient("github", r"[A-Za-z0-9]{32}")
-    search.register(github_client)
-
-    search.search_keys()
+  token = "TOKEN"
+  search = GithubSearch(token)
+  orchestrator = SearchOrchestrator(search)
+  orchestrator.run("my_api_key")
