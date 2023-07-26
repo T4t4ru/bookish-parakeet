@@ -60,32 +60,7 @@ def github_api_search_code(query, page, token):
 
 def parse_arguments():
     parser = argparse.ArgumentParser(description="Search for API keys in GitHub repositories")
-    parser.add_argument("-bevigil", action="store_true", help="Search for Bevigil API keys")
-    parser.add_argument("-binaryedge", action="store_true", help="Search for BinaryEdge API keys")
-    parser.add_argument("-bufferover", action="store_true", help="Search for Bufferover API keys")
-    parser.add_argument("-c99", action="store_true", help="Search for C99 API keys")
-    parser.add_argument("-censys", action="store_true", help="Search for Censys API keys")
-    parser.add_argument("-certspotter", action="store_true", help="Search for Certspotter API keys")
-    parser.add_argument("-chaos", action="store_true", help="Search for Chaos API keys")
-    parser.add_argument("-chinaz", action="store_true", help="Search for Chinaz API keys")
-    parser.add_argument("-dnsdb", action="store_true", help="Search for DNSDB API keys")
-    parser.add_argument("-dnsrepo", action="store_true", help="Search for DNSRepo API keys")
-    parser.add_argument("-fofa", action="store_true", help="Search for Fofa API keys")
-    parser.add_argument("-fullhunt", action="store_true", help="Search for FullHunt API keys")
-    parser.add_argument("-github", action="store_true", help="Search for GitHub API keys")
-    parser.add_argument("-hunter", action="store_true", help="Search for Hunter API keys")
-    parser.add_argument("-intelx", action="store_true", help="Search for Intelx API keys")
-    parser.add_argument("-leakix", action="store_true", help="Search for Leakix API keys")
-    parser.add_argument("-passivetotal", action="store_true", help="Search for PassiveTotal API keys")
-    parser.add_argument("-quake", action="store_true", help="Search for Quake API keys")
-    parser.add_argument("-robtex", action="store_true", help="Search for Robtex API keys")
-    parser.add_argument("-securitytrails", action="store_true", help="Search for SecurityTrails API keys")
-    parser.add_argument("-shodan", action="store_true", help="Search for Shodan API keys")
-    parser.add_argument("-threatbook", action="store_true", help="Search for Threatbook API keys")
-    parser.add_argument("-virustotal", action="store_true", help="Search for VirusTotal API keys")
-    parser.add_argument("-whoisxmlapi", action="store_true", help="Search for WhoisXMLAPI keys")
-    parser.add_argument("-zoomeye", action="store_true", help="Search for ZoomEye API keys")
-    parser.add_argument("-zoomeyeapi", action="store_true", help="Search for ZoomEyeAPI keys")
+    parser.add_argument("-all", action="store_true", help="Search for all supported API keys")
     return parser.parse_args()
 
 if __name__ == '__main__':
@@ -93,14 +68,22 @@ if __name__ == '__main__':
 
     print("--- DATA COLLECTION ---")
 
-    for api in API_KEY_PATTERNS:
-        if getattr(args, api):
+    if args.all:
+        for api, pattern in API_KEY_PATTERNS.items():
             query = f"{api}_api_key"
-            pattern = API_KEY_PATTERNS[api]
             raw_file_urls = github_api_search_code(query, 1, TOKEN_DATA)
             for url in raw_file_urls:
                 keys = find_match(url, pattern)
                 if keys:
                     print(f"Found {api.upper()} API keys {keys} in file {url}")
+    else:
+        for api, pattern in API_KEY_PATTERNS.items():
+            if getattr(args, api):
+                query = f"{api}_api_key"
+                raw_file_urls = github_api_search_code(query, 1, TOKEN_DATA)
+                for url in raw_file_urls:
+                    keys = find_match(url, pattern)
+                    if keys:
+                        print(f"Found {api.upper()} API keys {keys} in file {url}")
 
     print("--- Data collection completed ---")
