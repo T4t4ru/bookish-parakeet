@@ -33,7 +33,9 @@ API_KEY_PATTERNS = {
     "virustotal": r"[A-Za-z0-9]{32}",
     "whoisxmlapi": r"[A-Za-z0-9]{32}",
     "zoomeye": r"[A-Za-z0-9]{32}",
-    "zoomeyeapi": r"[A-Za-z0-9]{32}"
+    "zoomeyeapi": r"[A-Za-z0-9]{32}",
+    "telegram": r"[A-Za-z0-9]{45}",
+    "openai": r"[A-Za-z0-9]{32}-[A-Za-z0-9]{32}-[A-Za-z0-9]{32}-[A-Za-z0-9]{32}-[A-Za-z0-9]{32}"
 }
 
 def get_raw_file(file_url):
