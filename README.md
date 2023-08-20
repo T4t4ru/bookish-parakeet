@@ -18,7 +18,7 @@ A valid GitHub token must be provided in `TOKEN_DATA`.
 Example:
 
 ```bash
-python scraper.py -shodan -virustotal
+python scraper.py 
 ```
 I am not responsible for any damage caused by the use of the information provided by me. This information is intended solely for educational purposes. 
 Any use of this information for the purpose of harm or for personal gain is strictly prohibited. I do not approve or authorize such actions.
