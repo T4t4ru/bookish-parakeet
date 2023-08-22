@@ -6,7 +6,7 @@ import json
 from urllib.parse import urlparse
 
 GITHUB_API_KEY = r"ghp_[a-zA-Z0-9]{36}"
-TOKEN_DATA = "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"
+TOKEN_DATA = "x"
 
 API_KEY_PATTERNS = {
     "bevigil": r"[A-Za-z0-9]{64}",
